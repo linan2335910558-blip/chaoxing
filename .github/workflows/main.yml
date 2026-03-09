@@ -1,54 +1,21 @@
-name: CI
+name: Run Project
 
 on:
-  push:
   workflow_dispatch:
 
 jobs:
-  build:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        include:
-          - os: windows-latest
-            architecture: 'x64'
-            name: 'win64'
-
+  run:
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v3
 
-      # 关键：用 Python 3.9（兼容 ShutDown）
-      - name: Set up Python
+      - name: Set up Python 3.10
         uses: actions/setup-python@v3
         with:
-          python-version: '3.9'
-          architecture: ${{matrix.architecture}}
+          python-version: "3.10"
 
-      - name: Install requirements
-        run: |
-          pip install -r requirements.txt
+      - name: Install dependencies
+        run: pip install -r requirements.txt
 
-      # ↓↓↓ 这里是我加的【运行项目】↓↓↓
-      - name: Run project
-        run: |
-          python main.py
-
-      # 下面是你原来的打包步骤（不动）
-      - name: Install pyinstaller
-        run: pip install pyinstaller
-
-      - name: Build win bin
-        run: pyinstaller -F main.py -n 'chaoxing' --add-data "resource;resource"
-
-      - name: Create release package
-        run: |
-          mkdir release
-          copy dist\chaoxing.exe release\
-          copy config_template.ini release\
-          cd release
-          7z a -tzip chaoxing.zip *
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: ${{ matrix.name }}
-          path: 'release/chaoxing.zip'
+      - name: Run main.py
+        run: python main.py
